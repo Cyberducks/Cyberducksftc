@@ -1,6 +1,7 @@
 #include <Servo.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
+// #include "/Users/matt/Documents/Arduino/libraries/Adafruit_Sensor/Adafruit_Sensor.h" 
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 
@@ -10,7 +11,8 @@ Servo right_servo; // pin 8
 /* Set the delay between fresh samples */
 #define BNO055_SAMPLERATE_DELAY_MS (100)
 
-#define GYRO_TOLERANCE 10.0
+#define GYRO_TOLERANCE 2.0
+#define GYRO_TOLERANCE_TURN 10.0
 #define SERVO_FORWARD 0
 #define SERVO_REVERSE 110
 #define SERVO_STOP 90
@@ -109,7 +111,7 @@ void setup()
         int leftPower = right ? SERVO_FORWARD : SERVO_REVERSE;
         int rightPower = right ? SERVO_REVERSE : SERVO_FORWARD;
         int turnDegrees = right ? deg : - deg;
-        if (DiffFromCurrHeading(turnDegrees) > GYRO_TOLERANCE) {
+        if (DiffFromCurrHeading(turnDegrees) > GYRO_TOLERANCE_TURN) {
               if (SubtractFromCurrHeading(turnDegrees) > 0.0) {
                 // we overshot; go back the other way
                 rightPower = right ? SERVO_FORWARD : SERVO_REVERSE;
@@ -151,7 +153,7 @@ void setup()
     }
     
     void DriveStraightByGyro (float heading) {
-      if (DiffFromCurrHeading(heading) < GYRO_TOLERANCE/2.0) {
+      if (DiffFromCurrHeading(heading) < GYRO_TOLERANCE) {
           // on course, go straight
           left_servo.write( SERVO_FORWARD );
           right_servo.write( SERVO_FORWARD );
@@ -185,9 +187,9 @@ void loop()
       // go straight
       DriveStraightByGyroAndCounts(0.0, 20);
       // turn 180 degrees
-      TurnByGyro (true, 170.0);
+      TurnByGyro (true, 175.0);
       // go straight
-      DriveStraightByGyroAndCounts(170.0, 20);
+      DriveStraightByGyroAndCounts(180.0, 20);
       State = 1;
       break;
     case 1:

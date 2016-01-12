@@ -1,14 +1,23 @@
+#include <Ultrasonic.h>
+
+//libraries at http://www.duinoedu.com/
+Ultrasonic monUltrasonic(5);
+
 void setup()
 {
-  pinMode( 13 , OUTPUT);
+  pinMode( 3 , OUTPUT);
 }
 
 void loop()
 {
-  digitalWrite( 13 , HIGH );
-  delay( 1000 );
-  digitalWrite( 13 , LOW );
-  delay( 1000 );
+  if (( ( monUltrasonic.mesurer() ) < ( 5 ) ))
+  {
+    digitalWrite( 3 , HIGH );
+  }
+  else
+  {
+    digitalWrite( 3 , LOW );
+  }
 }
 
 

@@ -15,7 +15,7 @@ Servo right_servo; // pin 8
 #define SERVO_REVERSE 110
 #define SERVO_STOP 90
 
-int State = 3;
+int State = 0;
 unsigned long StartTime = 0;
 int LightState = 0;
 int LightCount = 0;
@@ -100,7 +100,7 @@ void setup()
       right_servo.write( SERVO_STOP );
       }
       
-    boolean TurnByGyro (boolean right, float degrees) { // return true if turn is complete
+    boolean TurnByGyroAsync (boolean right, float degrees) { // return true if turn is complete
         boolean result = false;
         int leftPower = right ? SERVO_FORWARD : SERVO_REVERSE;
         int rightPower = right ? SERVO_REVERSE : SERVO_FORWARD;
@@ -121,7 +121,13 @@ void setup()
         return result;
     }
 
-    void CountLights () {
+    void TurnByGyro (boolean right, float degrees) {
+      while (!TurnByGyroAsync) {
+        delay(BNO055_SAMPLERATE_DELAY_MS);
+      }
+    }
+
+    void CountLightTransitions () {
       bool light_sensor = digitalRead(4);
       switch (LightState) {
         case 0: //  dark
@@ -139,54 +145,47 @@ void setup()
     }
     
     void DriveStraightByGyro (float heading) {
-            if (DiffFromCurrHeading(heading) < GYRO_TOLERANCE/2.0) {
-                // on course, go straight
-                left_servo.write( SERVO_FORWARD );
-                right_servo.write( SERVO_FORWARD );
-            } else { // not on course, correct
-                if (SubtractFromCurrHeading(heading) > 0) {
-                    // correct left
-                    left_servo.write( SERVO_STOP );
-                    right_servo.write( SERVO_FORWARD );
-                } else {
-                    // correct right
-                    left_servo.write( SERVO_FORWARD );
-                    right_servo.write( SERVO_STOP );
-                }
-            }
+      if (DiffFromCurrHeading(heading) < GYRO_TOLERANCE/2.0) {
+          // on course, go straight
+          left_servo.write( SERVO_FORWARD );
+          right_servo.write( SERVO_FORWARD );
+      } else { // not on course, correct
+          if (SubtractFromCurrHeading(heading) > 0) {
+              // correct left
+              left_servo.write( SERVO_STOP );
+              right_servo.write( SERVO_FORWARD );
+          } else {
+              // correct right
+              left_servo.write( SERVO_FORWARD );
+              right_servo.write( SERVO_STOP );
+          }
+      }
     }
 
+    void DriveStraightByGyroAndCounts (float heading, int countLimit) {
+      LightCount = 0;
+      while (LightCount <= countLimit) {
+        DriveStraightByGyro(heading);
+        CountLightTransitions();
+        delay(BNO055_SAMPLERATE_DELAY_MS);
+      }
+    }
 
 void loop()
 {
   bool light_sensor = false ;
   switch (State) {
-    case 0: // go straight 3 seconds
-      DriveStraightByGyro(0.0);
-      if (Timer() > 3000) {
-        StopMotors();
-        State = 1;
-      }
-      break;
-    case 1: // turn 180 degrees
-      if (TurnByGyro (true, 170.0)) {
-        State = 2;
-        ResetTimer();
-        }
-      delay(BNO055_SAMPLERATE_DELAY_MS);
-      break;
-    case 2: // go straight 3 seconds
-      DriveStraightByGyro(170.0);
-      if (Timer() > 3000) {
-        StopMotors();
-        State = 3;
-      }
-      break;
-    case 3:
+    case 0: 
+      // go straight
+      DriveStraightByGyroAndCounts(0.0, 20);
+      // turn 180 degrees
+      TurnByGyro (true, 170.0);
+      // go straight
+      DriveStraightByGyroAndCounts(170.0, 20);
+      State = 1;
+    case 1:
       StopMotors();
-      digitalWrite( 3 , LOW );
-      CountLights();
-      if (LightCount > 5) { digitalWrite( 3 , HIGH );}
+      digitalWrite( 3 , HIGH );
     }
   }
 

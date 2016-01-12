@@ -33,7 +33,8 @@ unsigned long Timer() {
 
 void setup()
 {
-  pinMode(3, OUTPUT); // initialize digital pin 3 as an output for blinking
+  pinMode(2, OUTPUT); // yellow LED
+  pinMode(3, OUTPUT); // green LED
   pinMode(4, INPUT);  // line follower sensor
   pinMode(7, INPUT);  // green button
   
@@ -43,13 +44,16 @@ void setup()
     /* There was a problem detecting the BNO055 ... check your connections */
     // Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
     while(1) {
-        digitalWrite(3, HIGH);   // turn the LED on (HIGH is the voltage level)
+        digitalWrite(2, HIGH);   // turn the LED on (HIGH is the voltage level)
         delay(1000);              // wait for a second
-        digitalWrite(3, LOW);    // turn the LED off by making the voltage LOW
+        digitalWrite(2, LOW);    // turn the LED off by making the voltage LOW
         delay(1000);              // wait for a second
     }
   }
-    
+
+  // ready for button push
+  digitalWrite(3, HIGH); // green light on
+  
   // wait for start button
   while(digitalRead(7));
 
@@ -100,11 +104,11 @@ void setup()
       right_servo.write( SERVO_STOP );
       }
       
-    boolean TurnByGyroAsync (boolean right, float degrees) { // return true if turn is complete
+    boolean TurnByGyroAsync (boolean right, float deg) { // return true if turn is complete
         boolean result = false;
         int leftPower = right ? SERVO_FORWARD : SERVO_REVERSE;
         int rightPower = right ? SERVO_REVERSE : SERVO_FORWARD;
-        int turnDegrees = right ? degrees : - degrees;
+        int turnDegrees = right ? deg : - deg;
         if (DiffFromCurrHeading(turnDegrees) > GYRO_TOLERANCE) {
               if (SubtractFromCurrHeading(turnDegrees) > 0.0) {
                 // we overshot; go back the other way
@@ -121,9 +125,9 @@ void setup()
         return result;
     }
 
-    void TurnByGyro (boolean right, float degrees) {
-      while (!TurnByGyroAsync) {
-        delay(BNO055_SAMPLERATE_DELAY_MS);
+    void TurnByGyro (boolean right, float deg) {
+      while (!TurnByGyroAsync(right, deg)) {
+        //delay(BNO055_SAMPLERATE_DELAY_MS);
       }
     }
 
@@ -134,11 +138,13 @@ void setup()
           if (light_sensor) { // now light
             LightState = 1;
             LightCount++;
+            digitalWrite( 2 , HIGH );
           }
           break;
         case 1: // light
           if (!light_sensor) { // now dark
             LightState = 0;
+            digitalWrite( 2 , LOW );
           }
           break;
       }
@@ -167,7 +173,7 @@ void setup()
       while (LightCount <= countLimit) {
         DriveStraightByGyro(heading);
         CountLightTransitions();
-        delay(BNO055_SAMPLERATE_DELAY_MS);
+        //delay(BNO055_SAMPLERATE_DELAY_MS);
       }
     }
 
@@ -183,9 +189,12 @@ void loop()
       // go straight
       DriveStraightByGyroAndCounts(170.0, 20);
       State = 1;
+      break;
     case 1:
       StopMotors();
-      digitalWrite( 3 , HIGH );
+      digitalWrite(3, LOW); // green light off
+      digitalWrite(2, LOW); // yellow light off
+      break;
     }
   }
 

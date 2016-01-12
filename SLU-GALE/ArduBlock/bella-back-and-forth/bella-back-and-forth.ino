@@ -15,8 +15,10 @@ Servo right_servo; // pin 8
 #define SERVO_REVERSE 110
 #define SERVO_STOP 90
 
-int State = 0;
+int State = 3;
 unsigned long StartTime = 0;
+int LightState = 0;
+int LightCount = 0;
 
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
@@ -31,8 +33,9 @@ unsigned long Timer() {
 
 void setup()
 {
-  // initialize digital pin 13 as an output for blinking
-  pinMode(3, OUTPUT);
+  pinMode(3, OUTPUT); // initialize digital pin 3 as an output for blinking
+  pinMode(4, INPUT);  // line follower sensor
+  pinMode(7, INPUT);  // green button
   
   /* Initialise the gyro sensor */
   if(!bno.begin())
@@ -48,7 +51,6 @@ void setup()
   }
     
   // wait for start button
-  pinMode( 7, INPUT);
   while(digitalRead(7));
 
   // wait until gyro is calibrated
@@ -119,6 +121,23 @@ void setup()
         return result;
     }
 
+    void CountLights () {
+      bool light_sensor = digitalRead(4);
+      switch (LightState) {
+        case 0: //  dark
+          if (light_sensor) { // now light
+            LightState = 1;
+            LightCount++;
+          }
+          break;
+        case 1: // light
+          if (!light_sensor) { // now dark
+            LightState = 0;
+          }
+          break;
+      }
+    }
+    
     void DriveStraightByGyro (float heading) {
             if (DiffFromCurrHeading(heading) < GYRO_TOLERANCE/2.0) {
                 // on course, go straight
@@ -140,6 +159,7 @@ void setup()
 
 void loop()
 {
+  bool light_sensor = false ;
   switch (State) {
     case 0: // go straight 3 seconds
       DriveStraightByGyro(0.0);
@@ -164,6 +184,9 @@ void loop()
       break;
     case 3:
       StopMotors();
+      digitalWrite( 3 , LOW );
+      CountLights();
+      if (LightCount > 5) { digitalWrite( 3 , HIGH );}
     }
   }
 

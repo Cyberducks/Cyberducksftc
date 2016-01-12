@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<cb:CODEBLOCKS xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://education.mit.edu/openblocks/ns http://education.mit.edu/openblocks/codeblocks.xsd" xmlns:cb="http://education.mit.edu/openblocks/ns">
+<Pages collapsible-pages="yes" drawer-with-page="yes">
+<Page page-color="160 160 160" page-drawer="Main" page-infullview="yes" page-name="Main" page-width="1280">
+<PageBlocks>
+<Block genus-name="variable_digital" id="321">
+<Label>light_sensor</Label>
+<Location>
+<X>427</X>
+<Y>200</Y>
+</Location>
+<Plug>
+<BlockConnector con-block-id="320" connector-kind="plug" connector-type="boolean" init-type="boolean" label="" position-type="mirror"/>
+</Plug>
+</Block>
+<Block genus-name="glue_sb" id="320">
+<Location>
+<X>367</X>
+<Y>200</Y>
+</Location>
+<Plug>
+<BlockConnector con-block-id="316" connector-kind="plug" connector-type="string" init-type="string" label="" position-type="single"/>
+</Plug>
+<Sockets num-sockets="1">
+<BlockConnector con-block-id="321" connector-kind="socket" connector-type="boolean" init-type="boolean" label="" position-type="single"/>
+</Sockets>
+</Block>
+<Block genus-name="message" id="316">
+<Label>light =</Label>
+<Location>
+<X>283</X>
+<Y>200</Y>
+</Location>
+<Plug>
+<BlockConnector con-block-id="315" connector-kind="plug" connector-type="string" init-type="string" label="" position-type="single"/>
+</Plug>
+<Sockets num-sockets="1">
+<BlockConnector con-block-id="320" connector-kind="socket" connector-type="string" init-type="string" label="" position-type="single"/>
+</Sockets>
+</Block>
+<Block genus-name="seeed_line_finder" id="313">
+<Location>
+<X>395</X>
+<Y>118</Y>
+</Location>
+<Plug>
+<BlockConnector con-block-id="317" connector-kind="plug" connector-type="boolean" init-type="boolean" label="" position-type="single"/>
+</Plug>
+<Sockets num-sockets="1">
+<BlockConnector con-block-id="314" connector-kind="socket" connector-type="number" init-type="number" label="pin#" position-type="single"/>
+</Sockets>
+</Block>
+<Block genus-name="number" id="314">
+<Label>4</Label>
+<Location>
+<X>581</X>
+<Y>118</Y>
+</Location>
+<Plug>
+<BlockConnector con-block-id="313" connector-kind="plug" connector-type="number" init-type="number" label="" position-type="mirror"/>
+</Plug>
+</Block>
+<Block genus-name="setter_variable_digital" id="317">
+<Location>
+<X>149</X>
+<Y>91</Y>
+</Location>
+<BeforeBlockId>312</BeforeBlockId>
+<AfterBlockId>315</AfterBlockId>
+<Sockets num-sockets="2">
+<BlockConnector con-block-id="318" connector-kind="socket" connector-type="boolean" init-type="boolean" label="variable" position-type="single"/>
+<BlockConnector con-block-id="313" connector-kind="socket" connector-type="boolean" init-type="boolean" label="value" position-type="single"/>
+</Sockets>
+</Block>
+<Block genus-name="variable_digital" id="318">
+<Label>light_sensor</Label>
+<Location>
+<X>395</X>
+<Y>94</Y>
+</Location>
+<Plug>
+<BlockConnector con-block-id="317" connector-kind="plug" connector-type="boolean" init-type="boolean" label="" position-type="mirror"/>
+</Plug>
+</Block>
+<Block genus-name="serial_println" id="315">
+<Location>
+<X>149</X>
+<Y>197</Y>
+</Location>
+<BeforeBlockId>317</BeforeBlockId>
+<Sockets num-sockets="1">
+<BlockConnector con-block-id="316" connector-kind="socket" connector-type="string" init-type="string" label="" position-type="single"/>
+</Sockets>
+</Block>
+<Block genus-name="program" id="312">
+<Location>
+<X>31</X>
+<Y>48</Y>
+</Location>
+<Sockets num-sockets="2">
+<BlockConnector connector-kind="socket" connector-type="cmd" init-type="cmd" label="setup" position-type="single"/>
+<BlockConnector con-block-id="317" connector-kind="socket" connector-type="cmd" init-type="cmd" label="loop" position-type="single"/>
+</Sockets>
+</Block>
+</PageBlocks>
+</Page>
+</Pages>
+</cb:CODEBLOCKS>

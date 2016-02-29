@@ -15,7 +15,7 @@ void rgb(int rLevel, int gLevel, int bLevel) {
 }
 
 void fade(int fromRed, int fromGreen, int fromBlue, int toRed, int toGreen, int toBlue) {
-  int steps = 20;
+  int steps = 100;
   int redDelta = toRed - fromRed;
   int greenDelta = toGreen - fromGreen;
   int blueDelta = toBlue - fromBlue;
@@ -38,54 +38,18 @@ void fade(int fromRed, int fromGreen, int fromBlue, int toRed, int toGreen, int 
      curBlue += blueFactor;
      steps--;
      
-     delay(50); 
+     delay(25); 
   }
 }
 
 void loop()  {
+  rgb(0xFF,0,0);
+  delay(1000);
+  rgb(0,0xFF,0); 
+  delay(1000); 
+  rgb(0,0,0xFF);
+  delay(1000);  
   rgb(0xFF,0x10,0);
   delay(5000);
-  fade(0xFF,0x10,0, 255, 255, 255);
-  fade(255,255,255,0xFF,0x10,0);
-  // blue 
-//  rgb(0,0,255);
-//  delay(3000);
-  
-  // green
-//  rgb(0,255,0);
-//  delay(3000);
-  
-  // red
-//  rgb(255,0,0);
-//  delay(3000);
-//rgb(255,0,0);
-//delay(6000);
-//
-//rgb(0,255,0);
-//delay(3000);
-//
-//rgb(0,0,255);
-//delay(3000);
-  
-  // orange
-//  rgb(0xFF,0x10,0);
-//  delay(3000);
-  
-  // purple
-//  rgb(50,0,50);
-//  delay(3000);
-  
-  // yellow
-//  rgb(255,125,0);
-//  delay(3000);
-  
-  // white
-//  rgb(255,255,255);
-//  delay(3000);
-  
-  
-  
-  
-//  rgb(255,255,255);
-//  delay(3000);
+
 }

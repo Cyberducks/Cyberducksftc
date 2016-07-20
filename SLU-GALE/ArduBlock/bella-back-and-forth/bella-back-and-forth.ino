@@ -1,7 +1,6 @@
 #include <Servo.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
-// #include "/Users/matt/Documents/Arduino/libraries/Adafruit_Sensor/Adafruit_Sensor.h" 
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 

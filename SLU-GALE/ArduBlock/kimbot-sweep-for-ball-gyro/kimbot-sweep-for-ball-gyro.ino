@@ -33,9 +33,19 @@ int State = 0;
 unsigned long StartTime = 0;
 int LightState = 0;
 int LightCount = 0;
-
-
+float HeadingToBall = 0.0;
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+void CalibrateGyro () {
+  uint8_t system, gyro, accel, mag;
+  system = gyro = accel = mag = 0;
+  do {
+    bno.getCalibration(&system, &gyro, &accel, &mag);
+  } while (gyro < 3);
+
+  delay(1000);
+  bno.setExtCrystalUse(true);
+}
 
 void setup()
 {
@@ -70,25 +80,23 @@ void setup()
   while(digitalRead(7));
 
   // wait until gyro is calibrated
-  uint8_t system, gyro, accel, mag;
-  system = gyro = accel = mag = 0;
-  do {
-    bno.getCalibration(&system, &gyro, &accel, &mag);
-  } while (gyro < 3);
-
-  delay(1000);
-  bno.setExtCrystalUse(true);
+  CalibrateGyro();
 
 }
 
-    // heading is never negative, but it can flip from 1 to 359, so do modulus 180
-    // If this function returns negative, it means turns right to correct; positive means turn left
-    float SubtractFromCurrHeading(float x) {
+    float GetCurrentHeading () {
         /* Get a new sensor event */
         sensors_event_t event;
         bno.getEvent(&event);
+        float ch = event.orientation.x; 
+        return ch;
+    }
+    
+    // heading is never negative, but it can flip from 1 to 359, so do modulus 180
+    // If this function returns negative, it means turns right to correct; positive means turn left
+    float SubtractFromCurrHeading(float x) {
         float result = 0.0;
-        float ch = event.orientation.x;
+        float ch = GetCurrentHeading();
         float diff = abs(ch - x);
         if (diff >= 180.0) { // more than 180deg apart, so flip
             result = 360.0 - diff;
@@ -114,9 +122,9 @@ void setup()
         boolean result = false;
         int leftPower = right ? SERVO_FORWARD : SERVO_REVERSE;
         int rightPower = right ? SERVO_REVERSE : SERVO_FORWARD;
-        int turnDegrees = right ? deg : - deg;
-        if (DiffFromCurrHeading(turnDegrees) > GYRO_TOLERANCE_TURN) {
-              if (SubtractFromCurrHeading(turnDegrees) > 0.0) {
+        //int turnDegrees = right ? deg : - deg;  // 45 deg turn left from 0 should be -45, but let caller do that
+        if (DiffFromCurrHeading(deg) > GYRO_TOLERANCE_TURN) {
+              if (SubtractFromCurrHeading(deg) > 0.0) {
                 // we overshot; go back the other way
                 rightPower = right ? SERVO_FORWARD : SERVO_REVERSE;
                 leftPower = right ? SERVO_REVERSE : SERVO_FORWARD;
@@ -167,22 +175,22 @@ void setup()
       StopMotors();
     }
 
-    bool SweepForBall(float deg) {
+    bool SweepForBall(float centerHead) {   // sweep 45 degrees right and left of center
       LightCount = 0;
       bool foundBall = false;
-      while (!TurnByGyroAsync(TURN_RIGHT, deg) && !foundBall) { // sweep right counts
+      while (!TurnByGyroAsync(TURN_RIGHT, centerHead+45.0) && !foundBall) { // sweep right counts
         left_servo.write( SERVO_FORWARD );
         right_servo.write( SERVO_REVERSE );
         foundBall = monUltrasonic.mesurer() < OBJECT_UNDER_CLAW;
       }
       StopMotors(); delay (500); LightCount = 0;
-      while (!TurnByGyroAsync(TURN_LEFT, deg) && !foundBall) { // sweep back to center then left
+      while (!TurnByGyroAsync(TURN_LEFT, centerHead-45.0) && !foundBall) { // sweep back to center then left
         left_servo.write( SERVO_REVERSE );
         right_servo.write( SERVO_FORWARD );
         foundBall = monUltrasonic.mesurer() < OBJECT_UNDER_CLAW;
       }
       StopMotors(); delay (500); LightCount = 0;
-      while (!TurnByGyroAsync(TURN_RIGHT, 0.0) && !foundBall) { // sweep back to center
+      while (!TurnByGyroAsync(TURN_RIGHT, centerHead) && !foundBall) { // sweep back to center
         left_servo.write( SERVO_FORWARD );
         right_servo.write( SERVO_REVERSE );
         foundBall = monUltrasonic.mesurer() < OBJECT_UNDER_CLAW;
@@ -251,16 +259,16 @@ void loop()
   bool light_sensor = false ;
   bool found_ball = false;
   bool grabbed_ball = false;
-  
+    
   switch (State) {
     case 0: // go forward
-      DriveStraightByGyroAndCounts(0.0, 1);
+      DriveStraightByGyroAndCounts(HeadingToBall, 1);
       StopMotors();
       State = 1;
       break;
     case 1:
       delay (500);
-      found_ball = SweepForBall(45.0);
+      found_ball = SweepForBall(HeadingToBall);
       delay (500);
       if (found_ball) State = 2;
       else State = 0; // keep creeping forward
@@ -272,7 +280,8 @@ void loop()
       else State = 3; // backup and try again
       break;
     case 3: // backup
-      DriveByCounts(REVERSE, 2);
+      HeadingToBall = GetCurrentHeading(); // ball is nearby to our front; adjust
+      DriveByCounts(REVERSE, 1);
       StopMotors();
       State = 1;
       break;

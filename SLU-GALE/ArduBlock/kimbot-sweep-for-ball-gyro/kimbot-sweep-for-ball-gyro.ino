@@ -27,6 +27,7 @@ Ultrasonic monUltrasonic(5);
 #define OBJECT_UNDER_CLAW 7
 #define TURN_RIGHT true
 #define TURN_LEFT false
+#define CREEP_COUNT 1
 
 // globals
 int State = 0;
@@ -34,6 +35,7 @@ unsigned long StartTime = 0;
 int LightState = 0;
 int LightCount = 0;
 float HeadingToBall = 0.0;
+float DistanceTraveled = 0;
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
 void CalibrateGyro () {
@@ -259,10 +261,12 @@ void loop()
   bool light_sensor = false ;
   bool found_ball = false;
   bool grabbed_ball = false;
+  int directionToHome = TURN_RIGHT;
     
   switch (State) {
     case 0: // go forward
-      DriveStraightByGyroAndCounts(HeadingToBall, 1);
+      DriveStraightByGyroAndCounts(HeadingToBall, CREEP_COUNT);
+      DistanceTraveled += CREEP_COUNT;  // should do cosine of angle * CREEP_COUNT
       StopMotors();
       State = 1;
       break;
@@ -276,16 +280,26 @@ void loop()
     case 2:
       // successfully found ball, try to pick it up
       grabbed_ball = GrabBall();
-      if (grabbed_ball) State = 4; // done
+      if (grabbed_ball) State = 4; // got it!!
       else State = 3; // backup and try again
       break;
     case 3: // backup
       HeadingToBall = GetCurrentHeading(); // ball is nearby to our front; adjust
-      DriveByCounts(REVERSE, 1);
+      DriveByCounts(REVERSE, CREEP_COUNT);
+      DistanceTraveled -= 0.5;  // we're backing, but probably not straight back toward home; could do cosine of angle to get better guess
       StopMotors();
       State = 1;
       break;
-    case 4:
+    case 4:  // go back to home base
+      directionToHome = GetCurrentHeading() > 0 ? TURN_RIGHT : TURN_LEFT;
+      TurnByGyro (directionToHome, 180.0);
+      DriveStraightByGyroAndCounts(180, (int)DistanceTraveled);
+      StopMotors();
+      servo_pin_10.write( 180 ); // claw open; release ball
+      delay( 700 );
+      State = 5;
+      break; 
+    case 5: // all done
       StopMotors();
       digitalWrite(3, LOW); // green light off
       digitalWrite(2, LOW); // yellow light off

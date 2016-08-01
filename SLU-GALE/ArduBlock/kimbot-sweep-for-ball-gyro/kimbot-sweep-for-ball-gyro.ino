@@ -1,10 +1,10 @@
 #include <Servo.h>
 #include <Ultrasonic.h>
-
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
+#include <math.h>
 
 Servo left_servo; // pin 9
 Servo right_servo; // pin 8
@@ -28,6 +28,7 @@ Ultrasonic monUltrasonic(5);
 #define TURN_RIGHT true
 #define TURN_LEFT false
 #define CREEP_COUNT 1
+#define DEG_TO_RADS 1 / 360 * M_PI
 
 // globals
 int State = 0;
@@ -41,12 +42,13 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55);
 void CalibrateGyro () {
   uint8_t system, gyro, accel, mag;
   system = gyro = accel = mag = 0;
+  digitalWrite(3, LOW); // green light off
   do {
     bno.getCalibration(&system, &gyro, &accel, &mag);
   } while (gyro < 3);
-
   delay(1000);
   bno.setExtCrystalUse(true);
+  digitalWrite(3, HIGH); // green light on
 }
 
 void setup()
@@ -266,8 +268,8 @@ void loop()
   switch (State) {
     case 0: // go forward
       DriveStraightByGyroAndCounts(HeadingToBall, CREEP_COUNT);
-      DistanceTraveled += CREEP_COUNT;  // should do cosine of angle * CREEP_COUNT
       StopMotors();
+      DistanceTraveled += CREEP_COUNT * abs(cos(HeadingToBall*DEG_TO_RADS));  // as we wander around ball, not moving directly away from home
       State = 1;
       break;
     case 1:
@@ -286,8 +288,8 @@ void loop()
     case 3: // backup
       HeadingToBall = GetCurrentHeading(); // ball is nearby to our front; adjust
       DriveByCounts(REVERSE, CREEP_COUNT);
-      DistanceTraveled -= 0.5;  // we're backing, but probably not straight back toward home; could do cosine of angle to get better guess
       StopMotors();
+      DistanceTraveled -= CREEP_COUNT * abs(cos(HeadingToBall*DEG_TO_RADS));  // we're backing, but probably not straight back toward home
       State = 1;
       break;
     case 4:  // go back to home base

@@ -29,19 +29,22 @@ Ultrasonic monUltrasonic(5);
 #define ARM_DOWN 175
 #define ARM_UP 60
 #define OBJECT_UNDER_CLAW 7
-#define TURN_RIGHT true
-#define TURN_LEFT false
-#define CREEP_COUNT 1
-#define DEG_TO_RADS 1 / 360 * M_PI
+#define GREEN_FLASH_DURATION 200
 
 // globals
 int State = 0;
 unsigned long StartTime = 0;
 int LightState = 0;
 int LightCount = 0;
-float HeadingToBall = 0.0;
-float DistanceTraveled = 0;
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+void ResetTimer () {
+  StartTime = millis();
+}
+
+unsigned long Timer() {
+  return millis() - StartTime;
+}
 
 void CalibrateGyro () {
   uint8_t system, gyro, accel, mag;
@@ -70,11 +73,17 @@ void LightsOff() {
   digitalWrite(3, LOW); //  green light off  
 }
 
+void StartRapidGreenFlash() {
+  ResetTimer();
+}
+
 void FlashRapidGreen() {
-  digitalWrite(3, HIGH); //  green light on
-  delay (300);
-  digitalWrite(3, LOW); //  green light off
-  delay (300);
+  if (Timer() > GREEN_FLASH_DURATION*2)
+    ResetTimer();
+  else if (Timer() > GREEN_FLASH_DURATION)
+    digitalWrite(3, LOW); //  green light off
+  else
+    digitalWrite(3, HIGH); //  green light on
   }
 
 void setup()
@@ -145,37 +154,7 @@ void setup()
         return abs(SubtractFromCurrHeading(x));
     }
 
-//  void StopMotors () {
-//      left_servo.write( SERVO_STOP );
-//      right_servo.write( SERVO_STOP );
-//      }
 
-//    boolean TurnByGyroAsync (boolean right, float deg) { // return true if turn is complete
-//        boolean result = false;
-//        int leftPower = right ? SERVO_FORWARD : SERVO_REVERSE;
-//        int rightPower = right ? SERVO_REVERSE : SERVO_FORWARD;
-//        //int turnDegrees = right ? deg : - deg;  // 45 deg turn left from 0 should be -45, but let caller do that
-//        if (DiffFromCurrHeading(deg) > GYRO_TOLERANCE_TURN) {
-//              if (SubtractFromCurrHeading(deg) > 0.0) {
-//                // we overshot; go back the other way
-//                rightPower = right ? SERVO_FORWARD : SERVO_REVERSE;
-//                leftPower = right ? SERVO_REVERSE : SERVO_FORWARD;
-//                }
-//              left_servo.write( leftPower );
-//              right_servo.write( rightPower );
-//        } else {
-//              // stop motors
-//              StopMotors();
-//              result = true;
-//        }
-//        return result;
-//    }
-
-//    void TurnByGyro (boolean right, float deg) {
-//      while (!TurnByGyroAsync(right, deg)) {
-//        //delay(BNO055_SAMPLERATE_DELAY_MS);
-//      }
-//    }
 
     void CountLightTransitions () {
       bool light_sensor = digitalRead(4);
@@ -195,50 +174,17 @@ void setup()
           break;
       }
     }
-//
-//    void DriveByCounts (bool forward, int countLimit) {
-//      LightCount = 0;
-//      int servoPos = forward ? SERVO_FORWARD : SERVO_REVERSE;
-//      while (LightCount <= countLimit) {
-//        left_servo.write( servoPos );
-//        right_servo.write( servoPos );
-//        CountLightTransitions();
-//      }
-//      StopMotors();
-//    }
-
-//    bool SweepForBall(float centerHead) {   // sweep 45 degrees right and left of center
-//      LightCount = 0;
-//      bool foundBall = false;
-//      while (!TurnByGyroAsync(TURN_RIGHT, centerHead+45.0) && !foundBall) { // sweep right counts
-//        left_servo.write( SERVO_FORWARD );
-//        right_servo.write( SERVO_REVERSE );
-//        foundBall = monUltrasonic.mesurer() < OBJECT_UNDER_CLAW;
-//      }
-//      StopMotors(); delay (500); LightCount = 0;
-//      while (!TurnByGyroAsync(TURN_LEFT, centerHead-45.0) && !foundBall) { // sweep back to center then left
-//        left_servo.write( SERVO_REVERSE );
-//        right_servo.write( SERVO_FORWARD );
-//        foundBall = monUltrasonic.mesurer() < OBJECT_UNDER_CLAW;
-//      }
-//      StopMotors(); delay (500); LightCount = 0;
-//      while (!TurnByGyroAsync(TURN_RIGHT, centerHead) && !foundBall) { // sweep back to center
-//        left_servo.write( SERVO_FORWARD );
-//        right_servo.write( SERVO_REVERSE );
-//        foundBall = monUltrasonic.mesurer() < OBJECT_UNDER_CLAW;
-//      }
-//      StopMotors();
-//      return (foundBall);
-//    }
 
     bool LetDriverFindBall() {   // stay in loop until ball is found, counting lights
       digitalWrite( 3 , LOW ); // green light off
       bool foundBall = false;
-      while (!foundBall) { 
+      bool turnedAround = false;
+      while (!foundBall && DiffFromCurrHeading(180) > GYRO_TOLERANCE_TURN*2) { 
         CountLightTransitions();
         foundBall = monUltrasonic.mesurer() < OBJECT_UNDER_CLAW;
       }
-      return (foundBall);
+      turnedAround = DiffFromCurrHeading(180) <= GYRO_TOLERANCE_TURN*2;
+      return (turnedAround);
     }
 
     bool GrabBall()
@@ -258,78 +204,42 @@ void setup()
         grabbedBall = monUltrasonic.mesurer() >= OBJECT_UNDER_CLAW; // if we did grab ball, it is no longer visible to sensor
         if (grabbedBall) digitalWrite( 3 , HIGH ); // green LED on
       }
-      else
-      {
-        digitalWrite( 3 , LOW ); // green light off
-      }
       return (grabbedBall);
     }
 
-//    void DriveStraightByGyro (float heading) {
-//      if (DiffFromCurrHeading(heading) < GYRO_TOLERANCE) {
-//          // on course, go straight
-//          left_servo.write( SERVO_FORWARD );
-//          right_servo.write( SERVO_FORWARD );
-//      } else { // not on course, correct
-//          if (SubtractFromCurrHeading(heading) > 0) {
-//              // correct left
-//              left_servo.write( SERVO_STOP );
-//              right_servo.write( SERVO_FORWARD );
-//          } else {
-//              // correct right
-//              left_servo.write( SERVO_FORWARD );
-//              right_servo.write( SERVO_STOP );
-//          }
-//      }
-//    }
-
-//    void DriveStraightByGyroAndCounts (float heading, int countLimit) {
-//      LightCount = 0;
-//      while (LightCount <= countLimit) {
-//        DriveStraightByGyro(heading);
-//        CountLightTransitions();
-//        //delay(BNO055_SAMPLERATE_DELAY_MS);
-//      }
-//    }
-
-    void LetDriverTurnAround () {
-      while (DiffFromCurrHeading(180) > GYRO_TOLERANCE_TURN*2) { // wait for driver to get turned around
-        FlashRapidGreen();
-      }
-    }
     
     void LetDriverDriveHome (int countLimit) {
       LightCount = 0;
       while (LightCount <= countLimit) {
+        FlashRapidGreen();
         CountLightTransitions();
-        delay(BNO055_SAMPLERATE_DELAY_MS);
+        //delay(BNO055_SAMPLERATE_DELAY_MS);
       }
     }
 
 void loop()
 {
   // arm up, claw closed
-  servo_pin_10.write( 115 );
-  servo_pin_11.write( 60 );
+  servo_pin_10.write( CLAW_CLOSE );
+  servo_pin_11.write( ARM_UP );
   
   bool light_sensor = false ;
-  bool found_ball = false;
+  bool turned_around = false;
   bool grabbed_ball = false;
-  int directionToHome = TURN_RIGHT;
-    
+
   switch (State) {
-    case 0: // remote drive will locate ball; try to pick it up
-      found_ball = LetDriverFindBall();
-      State = 1;
+    case 0: // driver will locate ball; try to pick it up
+      turned_around = LetDriverFindBall();
+      if (turned_around) State = 2; // must have found ball, so drive home!
+      else State = 1;
       break;
     case 1:
       // successfully found ball, try to pick it up
       grabbed_ball = GrabBall();
-      if (grabbed_ball) State = 2; // got it!!
-      else State = 0; // try again
+      State = 0; // try again if necessary
       break;
     case 2:  // go back to home base
-      LetDriverTurnAround();
+      StartRapidGreenFlash();
       LetDriverDriveHome(LightCount);
       servo_pin_10.write( CLAW_OPEN ); // claw open; release ball
       delay( 700 );

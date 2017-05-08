@@ -22,6 +22,8 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(6, PIN, NEO_GRB + NEO_KHZ800); // MJ
 // and minimize distance between Arduino and first pixel.  Avoid connecting
 // on a live circuit...if you must, connect GND first.
 
+uint32_t color = 0;
+
 void setup() {
 
   pinMode(COLLISION_SENSOR,INPUT);
@@ -40,19 +42,12 @@ void setup() {
 
 #define MY_DELAY 100
 void loop() {
-  // Some example procedures showing how to display to the pixels:
-  colorWipe(strip.Color(255, 0, 0), MY_DELAY); // Red
-  colorWipe(strip.Color(0, 255, 0), MY_DELAY); // Green
-  colorWipe(strip.Color(0, 0, 255), MY_DELAY); // Blue
-//colorWipe(strip.Color(0, 0, 0, 255), 50); // White RGBW
-  // Send a theater pixel chase in...
-  //theaterChase(strip.Color(127, 127, 127), 50); // White
-  //theaterChase(strip.Color(127, 0, 0), 50); // Red
-  //theaterChase(strip.Color(0, 0, 127), 50); // Blue
-
-  //rainbow(20);
-  //rainbowCycle(20);
-  //theaterChaseRainbow(50);
+  color++;
+  uint32_t up = (255 + color) & 255;
+  uint32_t down = (255 - color) & 255;
+  colorWipe(strip.Color(up, 0, down), MY_DELAY); 
+  colorWipe(strip.Color(down, 0, up), MY_DELAY); 
+  colorWipe(strip.Color(0, 0, 0), MY_DELAY); // Black
 }
 
 

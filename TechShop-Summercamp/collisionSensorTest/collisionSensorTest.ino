@@ -38,16 +38,12 @@ void pins_init()
 
 boolean isTriggered()
 {
-  int cc = 0; // collision count
-  int nc = 0; // no collision count
-  for (int i=0; i<10; i++) {
-    if(!digitalRead(COLLISION_SENSOR)) // collision
-      {if (nc >= 7) cc++;}  // count collisions only after minimum quiet period
-    else // no collision
-      {if (cc == 0) nc++;} // quiet period at beginning of sample
-    delay(50);  // see if we are getting continuous readings
-  } // for
-  if (cc >= 2) return true;
-  return false;
+    if(!digitalRead(COLLISION_SENSOR))
+    {
+        delay(50);
+        if(!digitalRead(COLLISION_SENSOR))
+        return true;//the collision sensor triggers
+    }
+    return false;
 }
 

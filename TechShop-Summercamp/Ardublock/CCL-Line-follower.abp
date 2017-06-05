@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <cb:CODEBLOCKS xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://education.mit.edu/openblocks/ns http://education.mit.edu/openblocks/codeblocks.xsd" xmlns:cb="http://education.mit.edu/openblocks/ns">
 <Pages collapsible-pages="yes" drawer-with-page="yes">
-<Page page-color="160 160 160" page-drawer="Main" page-infullview="yes" page-name="Main" page-width="1541">
+<Page page-color="160 160 160" page-drawer="Main" page-infullview="yes" page-name="Main" page-width="1600">
 <PageBlocks>
 <Block genus-name="seeed_led" id="1876">
 <Location>
@@ -38,6 +38,17 @@
 <X>114</X>
 <Y>134</Y>
 </Location>
+<Comment>
+<Text>Yellow light on during setup</Text>
+<Location>
+<X>431</X>
+<Y>130</Y>
+</Location>
+<BoxSize>
+<Width>161</Width>
+<Height>56</Height>
+</BoxSize>
+</Comment>
 <BeforeBlockId>1855</BeforeBlockId>
 <AfterBlockId>313</AfterBlockId>
 <Sockets num-sockets="2">
@@ -98,6 +109,17 @@
 <X>113</X>
 <Y>675</Y>
 </Location>
+<Comment>
+<Text>Green light on while running</Text>
+<Location>
+<X>410</X>
+<Y>692</Y>
+</Location>
+<BoxSize>
+<Width>165</Width>
+<Height>59</Height>
+</BoxSize>
+</Comment>
 <BeforeBlockId>312</BeforeBlockId>
 <AfterBlockId>1876</AfterBlockId>
 <Sockets num-sockets="2">
@@ -301,6 +323,17 @@
 <X>443</X>
 <Y>375</Y>
 </Location>
+<Comment>
+<Text>Use sensor angle to adjust motor zero between 80 and 100</Text>
+<Location>
+<X>722</X>
+<Y>413</Y>
+</Location>
+<BoxSize>
+<Width>150</Width>
+<Height>100</Height>
+</BoxSize>
+</Comment>
 <Plug>
 <BlockConnector con-block-id="827" connector-kind="plug" connector-type="number" init-type="number" label="" position-type="mirror"/>
 </Plug>
@@ -312,7 +345,7 @@
 <Block genus-name="number" id="839">
 <Label>1023</Label>
 <Location>
-<X>671</X>
+<X>685</X>
 <Y>382</Y>
 </Location>
 <Plug>
@@ -357,6 +390,17 @@
 <X>485</X>
 <Y>269</Y>
 </Location>
+<Comment>
+<Text>Rotary sensor on Analog 0</Text>
+<Location>
+<X>737</X>
+<Y>297</Y>
+</Location>
+<BoxSize>
+<Width>130</Width>
+<Height>52</Height>
+</BoxSize>
+</Comment>
 <Plug>
 <BlockConnector con-block-id="835" connector-kind="plug" connector-type="number" init-type="number" label="" position-type="single"/>
 </Plug>
@@ -366,7 +410,7 @@
 </Block>
 <Block genus-name="DuinoEDU_A0" id="822">
 <Location>
-<X>679</X>
+<X>693</X>
 <Y>269</Y>
 </Location>
 <Plug>
@@ -619,14 +663,14 @@
 <Y>213</Y>
 </Location>
 <Comment>
-<Text>Wait for green start button</Text>
+<Text>Run setup until green start button pressed</Text>
 <Location>
-<X>761</X>
-<Y>239</Y>
+<X>625</X>
+<Y>198</Y>
 </Location>
 <BoxSize>
-<Width>99</Width>
-<Height>100</Height>
+<Width>200</Width>
+<Height>51</Height>
 </BoxSize>
 </Comment>
 <Plug>

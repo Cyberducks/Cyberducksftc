@@ -1,8 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <cb:CODEBLOCKS xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://education.mit.edu/openblocks/ns http://education.mit.edu/openblocks/codeblocks.xsd" xmlns:cb="http://education.mit.edu/openblocks/ns">
 <Pages collapsible-pages="yes" drawer-with-page="yes">
-<Page page-color="160 160 160" page-drawer="Main" page-infullview="yes" page-name="Main" page-width="1366">
+<Page page-color="160 160 160" page-drawer="Main" page-infullview="yes" page-name="Main" page-width="1600">
 <PageBlocks>
+<Block genus-name="DuinoEDU_Ultrasonic" id="1486">
+<Location>
+<X>243</X>
+<Y>291</Y>
+</Location>
+<Plug>
+<BlockConnector con-block-id="324" connector-kind="plug" connector-type="number" init-type="number" label="code" position-type="single"/>
+</Plug>
+<Sockets num-sockets="2">
+<BlockConnector con-block-id="1487" connector-kind="socket" connector-type="number" init-type="number" label="pin#" position-type="single"/>
+<BlockConnector con-block-id="1488" connector-kind="socket" connector-type="number" init-type="number" label="Nb Sample" position-type="single"/>
+</Sockets>
+</Block>
+<Block genus-name="number" id="1488">
+<Location>
+<X>433</X>
+<Y>315</Y>
+</Location>
+<Plug>
+<BlockConnector con-block-id="1486" connector-kind="plug" connector-type="number" init-type="number" label="" position-type="mirror"/>
+</Plug>
+</Block>
+<Block genus-name="DuinoEDU_D5" id="1487">
+<Location>
+<X>433</X>
+<Y>291</Y>
+</Location>
+<Plug>
+<BlockConnector con-block-id="1486" connector-kind="plug" connector-type="number" init-type="number" label="" position-type="single"/>
+</Plug>
+</Block>
 <Block genus-name="delay" id="999">
 <Location>
 <X>129</X>
@@ -69,7 +100,7 @@
 </Sockets>
 </Block>
 <Block genus-name="number" id="1008">
-<Label>180</Label>
+<Label>150</Label>
 <Location>
 <X>486</X>
 <Y>480</Y>
@@ -352,40 +383,18 @@
 <BlockConnector con-block-id="321" connector-kind="plug" connector-type="boolean" init-type="boolean" label="" position-type="mirror"/>
 </Plug>
 <Sockets num-sockets="2">
-<BlockConnector con-block-id="319" connector-kind="socket" connector-type="number" init-type="number" label="" position-type="bottom"/>
+<BlockConnector con-block-id="1486" connector-kind="socket" connector-type="number" init-type="number" label="" position-type="bottom"/>
 <BlockConnector con-block-id="325" connector-kind="socket" connector-type="number" init-type="number" label="" position-type="bottom"/>
 </Sockets>
 </Block>
 <Block genus-name="number" id="325">
 <Label>7</Label>
 <Location>
-<X>526</X>
-<Y>291</Y>
+<X>538</X>
+<Y>315</Y>
 </Location>
 <Plug>
 <BlockConnector con-block-id="324" connector-kind="plug" connector-type="number" init-type="number" label="" position-type="mirror"/>
-</Plug>
-</Block>
-<Block genus-name="DuinoEDU_Ultrasonic" id="319">
-<Location>
-<X>243</X>
-<Y>291</Y>
-</Location>
-<Plug>
-<BlockConnector con-block-id="324" connector-kind="plug" connector-type="number" init-type="number" label="code" position-type="single"/>
-</Plug>
-<Sockets num-sockets="1">
-<BlockConnector con-block-id="320" connector-kind="socket" connector-type="number" init-type="number" label="pin#" position-type="single"/>
-</Sockets>
-</Block>
-<Block genus-name="number" id="320">
-<Label>5</Label>
-<Location>
-<X>433</X>
-<Y>291</Y>
-</Location>
-<Plug>
-<BlockConnector con-block-id="319" connector-kind="plug" connector-type="number" init-type="number" label="" position-type="mirror"/>
 </Plug>
 </Block>
 <Block genus-name="servo_default" id="642">

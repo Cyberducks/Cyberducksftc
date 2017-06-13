@@ -480,17 +480,6 @@
 <X>213</X>
 <Y>1194</Y>
 </Location>
-<Comment>
-<Text>Right motor, counterclockwise is forward</Text>
-<Location>
-<X>543</X>
-<Y>1232</Y>
-</Location>
-<BoxSize>
-<Width>251</Width>
-<Height>48</Height>
-</BoxSize>
-</Comment>
 <BeforeBlockId>334</BeforeBlockId>
 <Sockets num-sockets="2">
 <BlockConnector con-block-id="338" connector-kind="socket" connector-type="number-list" init-type="number-list" label="pin#" position-type="single"/>
@@ -544,14 +533,15 @@
 <Y>911</Y>
 </Location>
 <Comment>
-<Text>Left motor, clockwise is forward</Text>
+<Text>Normal line follower:
+8 is Right motor</Text>
 <Location>
 <X>548</X>
 <Y>961</Y>
 </Location>
 <BoxSize>
-<Width>159</Width>
-<Height>61</Height>
+<Width>243</Width>
+<Height>56</Height>
 </BoxSize>
 </Comment>
 <BeforeBlockId>316</BeforeBlockId>
@@ -566,6 +556,18 @@
 <X>214</X>
 <Y>1001</Y>
 </Location>
+<Comment>
+<Text>Geared-down line follower:
+9 is Right motor</Text>
+<Location>
+<X>602</X>
+<Y>1031</Y>
+</Location>
+<BoxSize>
+<Width>189</Width>
+<Height>69</Height>
+</BoxSize>
+</Comment>
 <BeforeBlockId>319</BeforeBlockId>
 <Sockets num-sockets="2">
 <BlockConnector con-block-id="323" connector-kind="socket" connector-type="number-list" init-type="number-list" label="pin#" position-type="single"/>

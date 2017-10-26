@@ -19,7 +19,7 @@ PRIZM prizm;
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 
 
-MJS: was (60, PIN, NEO_GRB + NEO_KHZ800)
+// MJS: was (60, PIN, NEO_GRB + NEO_KHZ800)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(30, PIN, NEO_GRB + NEO_KHZ800); // In this line, change "60" to match the number of LED's in your strip
                                                                             // You may also have to change some of the other parameters (see parameters above)
 

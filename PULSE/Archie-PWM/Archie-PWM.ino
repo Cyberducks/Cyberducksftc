@@ -3,32 +3,40 @@
 
 PULSE pulse;
 
-#define CH4_PIN 2
+#define CH1_PIN 2
 #define CH3_PIN 3
+#define LEFT_EAR_PIN 4
+#define RIGHT_EAR_PIN A3
 
 // pwm value range for ch3: 1008 to 2008, middle is 1500
-// pwm value range for ch4: 984 to 1984, middle is 1480
+// pwm value range for ch1: 984 to 1984, middle is 1480
 #define CH3MIN 1008
 #define CH3MAX 2008
 #define CH3MID 1504
 #define CH3SCALE 50
-#define CH4MIN 984
-#define CH4MAX 1984
-#define CH4MID 1480
-#define CH4SCALE 50
+#define CH1MIN 984
+#define CH1MAX 1984
+#define CH1MID 1480
+#define CH1SCALE 50
 #define DEADZONE 5
+#define SONARTOLERANCE 20
+#define SERVOCENTER 102
+#define SERVOMAX 175
+#define SERVOMIN 5
 
-uint16_t pwm_value_ch4 = 0;
+uint16_t pwm_value_ch1 = 0;
 uint16_t pwm_value_ch3 = 0;
+
+int ServoPosition = SERVOCENTER;
 
 // see http://blog.mired.org/2015/10/a-close-look-at-pwm-input.html
 
-void change_ch4() {
-  static unsigned long prev_time_ch4 = 0;
-  if (digitalRead(CH4_PIN))
-    prev_time_ch4 = micros();
+void change_ch1() {
+  static unsigned long prev_time_ch1 = 0;
+  if (digitalRead(CH1_PIN))
+    prev_time_ch1 = micros();
   else
-    pwm_value_ch4 = micros() - prev_time_ch4;
+    pwm_value_ch1 = micros() - prev_time_ch1;
 }
 
 void change_ch3() {
@@ -41,12 +49,14 @@ void change_ch3() {
 
 void setup()
 {
-  pinMode(CH4_PIN, INPUT_PULLUP);
-  enableInterrupt(CH4_PIN, &change_ch4, CHANGE);
+  pinMode(CH1_PIN, INPUT_PULLUP);
+  enableInterrupt(CH1_PIN, &change_ch1, CHANGE);
   pinMode(CH3_PIN, INPUT_PULLUP);
   enableInterrupt(CH3_PIN, &change_ch3, CHANGE);
 
   // Serial.begin(115200);
+
+  // pulse.setServoPosition (1, ServoPosition); // this should center head, but doesn't, even with delay(1000)
   
   pulse.PulseBegin();
   pulse.setMotorInvert (1,1);
@@ -54,14 +64,16 @@ void setup()
 
 void loop()
 {
-  uint16_t pwmin4, pwmin3;
+  // Decode PWM signal from radio and set drive motors
+  
+  uint16_t pwmin1, pwmin3;
   //noInterrupts();
-  pwmin4 = pwm_value_ch4 ;
+  pwmin1 = pwm_value_ch1 ;
   pwmin3 = pwm_value_ch3 ;
   //interrupts(); 
 
   long powerStraight = ((long)pwmin3 - CH3MID) / CH3SCALE;
-  long powerSteer = ((long)pwmin4 - CH4MID) / CH4SCALE;
+  long powerSteer = ((long)pwmin1 - CH1MID) / CH1SCALE;
   long powerLeft = powerStraight * abs(powerStraight) + powerSteer * abs(powerSteer);
   long powerRight = powerStraight * abs(powerStraight) - powerSteer * abs(powerSteer);
 
@@ -73,11 +85,28 @@ void loop()
   else if (powerRight < -100) powerRight = -100;
   else if (abs(powerRight) < DEADZONE) powerRight = 0;
 
-  // Serial.print(pwmin4);
+  // Serial.print(pwmin1);
   // Serial.print(" ");
   // Serial.println(powerLeft);
   
   pulse.setMotorPowers (powerLeft, powerRight); 
+
+  // Position head so sonar sensors are returning about the same value
+  
+  int leftEar = pulse.readSonicSensorCM(LEFT_EAR_PIN);
+  int rightEar = pulse.readSonicSensorCM(RIGHT_EAR_PIN);
+
+  // Serial.print(rightEar);
+  // Serial.print(" ");
+  // Serial.println(leftEar);
+
+  if (abs(leftEar - rightEar) > SONARTOLERANCE) {
+    if (leftEar > rightEar) ServoPosition += 1;
+    else ServoPosition -= 1;
+    ServoPosition = min(SERVOMAX, max(SERVOMIN, ServoPosition));
+  }
+  
+  pulse.setServoPosition (1, ServoPosition);
 
 }
 

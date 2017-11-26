@@ -21,8 +21,8 @@ PULSE pulse;
 #define DEADZONE 5
 #define SONARTOLERANCE 20
 #define SERVOCENTER 102
-#define SERVOMAX 175
-#define SERVOMIN 5
+#define SERVOMAX 170
+#define SERVOMIN 10
 
 uint16_t pwm_value_ch1 = 0;
 uint16_t pwm_value_ch3 = 0;
@@ -101,9 +101,10 @@ void loop()
   // Serial.println(leftEar);
 
   if (abs(leftEar - rightEar) > SONARTOLERANCE) {
-    if (leftEar > rightEar) ServoPosition += 1;
-    else ServoPosition -= 1;
-    ServoPosition = min(SERVOMAX, max(SERVOMIN, ServoPosition));
+    if (leftEar > rightEar) ServoPosition += 2;
+    else ServoPosition -= 2;
+    if (ServoPosition > SERVOMAX || ServoPosition < SERVOMIN) ServoPosition = SERVOCENTER;
+    // ServoPosition = min(SERVOMAX, max(SERVOMIN, ServoPosition));
   }
   
   pulse.setServoPosition (1, ServoPosition);

@@ -22,11 +22,11 @@ ChainableLED leds(LEFT_EYE_PIN, RIGHT_EYE_PIN, NUM_LEDS);
 #define CH3MIN 1008
 #define CH3MAX 2008
 #define CH3MID 1504
-#define CH3SCALE 50
+#define CH3SCALE 5 // was 50 when I was squaring power
 #define CH1MIN 984
 #define CH1MAX 1984
 #define CH1MID 1480
-#define CH1SCALE 50
+#define CH1SCALE 5 // was 50 when I was squaring power
 #define DEADZONE 5
 #define SONARTOLERANCE 20
 #define SERVOCENTER 102
@@ -87,8 +87,10 @@ void loop()
 
   long powerStraight = ((long)pwmin3 - CH3MID) / CH3SCALE;
   long powerSteer = ((long)pwmin1 - CH1MID) / CH1SCALE;
-  long powerLeft = powerStraight * abs(powerStraight) + powerSteer * abs(powerSteer);
-  long powerRight = powerStraight * abs(powerStraight) - powerSteer * abs(powerSteer);
+  // long powerLeft = powerStraight * abs(powerStraight) + powerSteer * abs(powerSteer);
+  // long powerRight = powerStraight * abs(powerStraight) - powerSteer * abs(powerSteer);
+  long powerLeft = powerStraight + powerSteer ;
+  long powerRight = powerStraight - powerSteer;
 
   if (powerLeft > 100) powerLeft = 100;
   else if (powerLeft < -100) powerLeft = -100;

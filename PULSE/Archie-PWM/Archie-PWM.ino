@@ -1,5 +1,6 @@
 #include <PULSE.h>
 #include <EnableInterrupt.h>
+#include <ChainableLED.h>
 
 PULSE pulse;
 
@@ -7,6 +8,14 @@ PULSE pulse;
 #define CH3_PIN 3
 #define LEFT_EAR_PIN 4
 #define RIGHT_EAR_PIN A3
+#define LEFT_EYE_PIN A1
+#define RIGHT_EYE_PIN A2
+
+#define NUM_LEDS  2
+#define LEFT_EYE 0
+#define RIGHT_EYE 1
+
+ChainableLED leds(LEFT_EYE_PIN, RIGHT_EYE_PIN, NUM_LEDS);
 
 // pwm value range for ch3: 1008 to 2008, middle is 1500
 // pwm value range for ch1: 984 to 1984, middle is 1480
@@ -28,6 +37,8 @@ uint16_t pwm_value_ch1 = 0;
 uint16_t pwm_value_ch3 = 0;
 
 int ServoPosition = SERVOCENTER;
+float leftHue = 0.5;
+float rightHue = 0.5;
 
 // see http://blog.mired.org/2015/10/a-close-look-at-pwm-input.html
 
@@ -54,6 +65,8 @@ void setup()
   pinMode(CH3_PIN, INPUT_PULLUP);
   enableInterrupt(CH3_PIN, &change_ch3, CHANGE);
 
+  leds.init();
+  
   // Serial.begin(115200);
 
   // pulse.setServoPosition (1, ServoPosition); // this should center head, but doesn't, even with delay(1000)
@@ -98,7 +111,7 @@ void loop()
 
   // Serial.print(rightEar);
   // Serial.print(" ");
-  // Serial.println(leftEar);
+  // Serial.println(rightHue);
 
   if (abs(leftEar - rightEar) > SONARTOLERANCE) {
     if (leftEar > rightEar) ServoPosition += 2;
@@ -108,6 +121,12 @@ void loop()
   }
   
   pulse.setServoPosition (1, ServoPosition);
+
+  leftHue = min (150.0, leftEar) / 150.0; // 100cm is about 3 feet
+  rightHue = min (150.0, rightEar) / 150.0; // 100cm is about 3 feet
+
+  leds.setColorHSB(LEFT_EYE, leftHue, 1.0, 0.5);
+  leds.setColorHSB(RIGHT_EYE, rightHue, 1.0, 0.5);
 
 }
 

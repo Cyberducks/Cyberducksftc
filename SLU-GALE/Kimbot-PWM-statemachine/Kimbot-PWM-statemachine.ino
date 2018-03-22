@@ -5,14 +5,15 @@
 #define CH1_PIN 5
 #define CH3_PIN 6
 
-uint16_t pwm_value_ch1 = 0;
-uint16_t pwm_value_ch3 = 0;
+uint16_t pwm_value_ch1 = 0; // left and right
+uint16_t pwm_value_ch3 = 0; // forward and backward
 
 #define LOOKING_STATE 0
 #define CLAWOPEN_STATE 1
 #define ARMDOWN_STATE 2
 #define CLAWCLOSE_STATE 3
 #define ARMUP_STATE 4
+#define RESTING_STATE 5
 
 int state = LOOKING_STATE;
 long timerstart = 0;
@@ -58,6 +59,11 @@ void setup()
   enableInterrupt(CH1_PIN, &change_ch1, CHANGE);
   pinMode(CH3_PIN, INPUT_PULLUP);
   enableInterrupt(CH3_PIN, &change_ch3, CHANGE);
+
+  pinMode( 7 , INPUT); // green button
+  while ( digitalRead(7) ) ; // wait for green button
+  
+  //Serial.begin(9600);
 }
 
 void loop()
@@ -66,11 +72,21 @@ void loop()
   // servo_pin_11.write( 60 ); // arm up
   switch (state) {
     case LOOKING_STATE:
+      //Serial.print("Distance in CM: "); Serial.println(monUltrasonic_pin4.distanceRead()); delay(1000);
       digitalWrite(3 , LOW); // light off
-      if (( ( monUltrasonic_pin4.mesurer(1) ) < ( 5 ) )) { 
+      if (monUltrasonic_pin4.distanceRead() < 6 ) {   // was mesurer(1), before library update
         digitalWrite(3 , HIGH); // light on
         timerstart = millis();
         state= CLAWOPEN_STATE; 
+      } else { // give ultrasonic a short break
+        timerstart = millis();
+        state = RESTING_STATE;
+      }
+      break;
+    case RESTING_STATE: 
+      if (millis() > timerstart + 500) {  // delay(500)
+        timerstart = millis();
+        state = LOOKING_STATE;
       }
       break;
     case CLAWOPEN_STATE: 

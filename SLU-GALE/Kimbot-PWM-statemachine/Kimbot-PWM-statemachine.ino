@@ -15,14 +15,21 @@ uint16_t pwm_value_ch3 = 0; // forward and backward
 #define ARMUP_STATE 4
 #define RESTING_STATE 5
 
+#define ARMUP_POS  60 // was 60
+#define ARMDOWN_POS 150 // was 180
+#define SONAR_REST_TIME 300 // msecs
+
 int state = LOOKING_STATE;
 long timerstart = 0;
+long sonarThreshold = 0;
 
 Servo servo_pin_8;
 Servo servo_pin_9;
 Servo servo_pin_10;
 Servo servo_pin_11;
 Servo servo_pin_12;
+
+#define ROTARY_ANGLE_SENSOR A1 // on some Pitsco shields this is erroneously labeled A0
 
 //libraries at http://duinoedu.com/dl/lib/grove/EDU_Ultrasonic_Grove/ 
 Ultrasonic monUltrasonic_pin4(4);
@@ -54,27 +61,46 @@ void setup()
   servo_pin_10.attach(10);
   servo_pin_11.attach(11);
   servo_pin_12.attach(12);
+  servo_pin_11.write( ARMUP_POS ); // arm up
 
   pinMode(CH1_PIN, INPUT_PULLUP);
   enableInterrupt(CH1_PIN, &change_ch1, CHANGE);
   pinMode(CH3_PIN, INPUT_PULLUP);
   enableInterrupt(CH3_PIN, &change_ch3, CHANGE);
-
-  pinMode( 7 , INPUT); // green button
-  while ( digitalRead(7) ) ; // wait for green button
   
-  //Serial.begin(9600);
+  // Serial.begin(9600);
+    
+  pinMode( 7 , INPUT); // green button
+  long knobMin = 0; long knobMax = 1023;
+  while ( digitalRead(7) ) { // wait for green button
+    long knobReading = analogRead(ROTARY_ANGLE_SENSOR); // value is typically between 0 and 1023 when batt power is on
+    // knobMin = min(knobMin, knobReading); knobMax = max(knobMax, knobReading);  // adjust range if it changes
+    sonarThreshold = (knobReading - knobMin) * 10 / (knobMax - knobMin); // should give value between 0 and 10
+    unsigned int sonarReading = monUltrasonic_pin4.distanceRead(CM);
+    //    Serial.print(knobMin);
+    //    Serial.print (" ");
+    //    Serial.print(knobReading);
+    //    Serial.print (" ");
+    //    Serial.print(knobMax);
+    //    Serial.print (" ");
+    //    Serial.print(sonarThreshold);
+    //    Serial.print (" ");
+    //    Serial.println(sonarReading);
+    if (sonarReading < sonarThreshold) {digitalWrite(3 , HIGH);} // light on
+    else {digitalWrite(3 , LOW);} // light off
+    delay(SONAR_REST_TIME);
+  } // while waiting for green button
+  
 }
 
 void loop()
 {
-  // servo_pin_10.write( 115 ); // claw close
-  // servo_pin_11.write( 60 ); // arm up
+  
   switch (state) {
     case LOOKING_STATE:
       //Serial.print("Distance in CM: "); Serial.println(monUltrasonic_pin4.distanceRead()); delay(1000);
       digitalWrite(3 , LOW); // light off
-      if (monUltrasonic_pin4.distanceRead() < 6 ) {   // was mesurer(1), before library update
+      if (monUltrasonic_pin4.distanceRead(CM) < sonarThreshold ) {   // was mesurer(1), before library update
         digitalWrite(3 , HIGH); // light on
         timerstart = millis();
         state= CLAWOPEN_STATE; 
@@ -84,7 +110,7 @@ void loop()
       }
       break;
     case RESTING_STATE: 
-      if (millis() > timerstart + 500) {  // delay(500)
+      if (millis() > timerstart + SONAR_REST_TIME) {  
         timerstart = millis();
         state = LOOKING_STATE;
       }
@@ -97,7 +123,7 @@ void loop()
       }
       break;
     case ARMDOWN_STATE:
-      servo_pin_11.write( 180 ); // arm down
+      servo_pin_11.write( ARMDOWN_POS ); // arm down
       if (millis() > timerstart + 800) { // delay( 800 );
         timerstart = millis();
         state = CLAWCLOSE_STATE;
@@ -111,7 +137,7 @@ void loop()
       }
       break;
     case ARMUP_STATE:
-      servo_pin_11.write( 60 ); // arm up
+      servo_pin_11.write( ARMUP_POS ); // arm up
       if (millis() > timerstart + 700 ) { // delay( 700 );
         timerstart = millis();
         state = LOOKING_STATE;

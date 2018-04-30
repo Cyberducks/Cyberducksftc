@@ -87,10 +87,14 @@ void loop()
 
   long powerStraight = ((long)pwmin3 - CH3MID) / CH3SCALE;
   long powerSteer = ((long)pwmin1 - CH1MID) / CH1SCALE;
-  // long powerLeft = powerStraight * abs(powerStraight) + powerSteer * abs(powerSteer);
-  // long powerRight = powerStraight * abs(powerStraight) - powerSteer * abs(powerSteer);
-  long powerLeft = powerStraight + powerSteer ;
-  long powerRight = powerStraight - powerSteer;
+  long powerLeft = 0;  long powerRight = 0;
+  if (abs(powerSteer) > 50 && abs(powerStraight) < 50) {
+    powerRight = -powerSteer;
+    powerLeft = powerSteer;
+  } else {
+    powerLeft = powerStraight + powerSteer ;
+    powerRight = powerStraight - powerSteer;
+  }
 
   if (powerLeft > 100) powerLeft = 100;
   else if (powerLeft < -100) powerLeft = -100;

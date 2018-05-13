@@ -19,12 +19,12 @@ Servo servo_pin_11;
 #define ENCODER_COUNT_FOR_OFF_LINE 4
 #define ENCODER_COUNT_FOR_BACKUP 18
 #define ENCODER_COUNT_FOR_FORWARD_AGAIN  32
-#define ENCODER_COUNT_FOR_PAUSE 14
+#define ENCODER_COUNT_FOR_PAUSE 19
 
 #define PAUSE_COUNTER_RUNNING 0
 #define PAUSE_COUNTER_SUSPENDED 1
 
-int PauseCounterState = PAUSE_COUNTER_RUNNING;
+int PauseCounterState = PAUSE_COUNTER_SUSPENDED;
 
 void ResetEncoder() {
   EncoderState = digitalRead(5); // line finder on wheel
@@ -48,13 +48,22 @@ void CheckEncoder() {
   }
 }
 
-void UpdatePauseCounterState (bool OnLine) {
-  if (!OnLine) { PauseCounterState = PAUSE_COUNTER_SUSPENDED; }
-  else if (PauseCounterState == PAUSE_COUNTER_SUSPENDED) { // just found line again; resume counting
+void UpdatePauseCounterState (bool runCounter) {
+  // start pause counter at same time as we switch from backup to forward again
+  if (!runCounter) {PauseCounterState = PAUSE_COUNTER_SUSPENDED;}
+  else if (PauseCounterState == PAUSE_COUNTER_SUSPENDED) { // was suspended; reset and run counter
     ResetPauseEncoder();
     PauseCounterState = PAUSE_COUNTER_RUNNING;
   }
 }
+
+//void UpdatePauseCounterState (bool OnLine) {
+//  if (!OnLine) { PauseCounterState = PAUSE_COUNTER_SUSPENDED; }
+//  else if (PauseCounterState == PAUSE_COUNTER_SUSPENDED) { // just found line again; resume counting
+//    ResetPauseEncoder();
+//    PauseCounterState = PAUSE_COUNTER_RUNNING;
+//  }
+//}
 
 void CheckForLineColorSwitch() {
   while (!digitalRead(7)) {  // while green button is held down
@@ -123,6 +132,7 @@ void loop()
   
   if (PauseCounterState == PAUSE_COUNTER_RUNNING && PauseEncoderCount > ENCODER_COUNT_FOR_PAUSE)
   {
+    UpdatePauseCounterState (false);  // stop counting for pause
     servo_pin_13.write( 93 ); // stop mid-line so driver can shoot
     servo_pin_11.write( 90 );
     for (_ABVAR_1_Pixel= 1; _ABVAR_1_Pixel<= ( 6 ); _ABVAR_1_Pixel++ )
@@ -131,7 +141,6 @@ void loop()
       strip_pin6.show();
     }
     delay( 3000 );
-    ResetPauseEncoder();
     for (_ABVAR_1_Pixel= 1; _ABVAR_1_Pixel<= ( 6 ); _ABVAR_1_Pixel++ )
     {
       strip_pin6.setPixelColor(( _ABVAR_1_Pixel - 1 ),0 ,0 ,0 );
@@ -144,21 +153,20 @@ void loop()
     {
       ResetEncoder() ;  
       servo_pin_11.write( 180 );  // turn line-left when on line
+      servo_pin_13.write( 0 );  // go line-forward when on line
     }
     else // not on line
     {
         // check how long we've been off line, using encoder counts
         if (EncoderCount > ENCODER_COUNT_FOR_FORWARD_AGAIN) {
           servo_pin_13.write( 0 );  // second: go line-forward again
-          ResetPauseEncoder();
+          UpdatePauseCounterState (true);
         } else if (EncoderCount > ENCODER_COUNT_FOR_BACKUP) {
           servo_pin_13.write( 180 );  // first: go line-backward
-          ResetPauseEncoder();
         } else if (EncoderCount > ENCODER_COUNT_FOR_OFF_LINE) {
-          UpdatePauseCounterState (false); // not on line
+          servo_pin_13.write( 0 ); // not on line, continue driving forward for a while
         } else { // main mode: go line-forward
           servo_pin_13.write( 0 );  // main mode: go line-forward
-          UpdatePauseCounterState (true); // on line
         }
       servo_pin_11.write( 0 );  // turn line-right when off line
     }
